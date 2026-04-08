@@ -13,6 +13,7 @@
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
+    "target": "es2020",
     "paths": {
       "@/*": ["./*"]
     }
