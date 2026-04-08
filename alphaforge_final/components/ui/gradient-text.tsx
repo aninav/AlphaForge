@@ -4,18 +4,23 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-interface GradientTextProps extends React.HTMLAttributes<HTMLSpanElement> {
+type GradientTextProps<T extends React.ElementType> = {
+  as?: T;
   className?: string;
   children: React.ReactNode;
-}
+} & React.ComponentPropsWithoutRef<T>;
 
-export function GradientText({
+export function GradientText<T extends React.ElementType = "span">({
+  as,
   className,
   children,
   ...props
-}: GradientTextProps) {
+}: GradientTextProps<T>) {
+  const Component = as || "span";
+
   return (
     <motion.span
+      as={Component as any}
       className={cn(
         "relative inline-block",
         "bg-gradient-to-br from-forge-bright via-forge-text to-forge-subtle",
