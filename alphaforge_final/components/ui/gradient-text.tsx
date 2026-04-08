@@ -1,27 +1,21 @@
 "use client";
 
 import React from "react";
-import { motion, type MotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-interface GradientTextProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, keyof MotionProps> {
+interface GradientTextProps extends React.HTMLAttributes<HTMLSpanElement> {
   className?: string;
   children: React.ReactNode;
-  as?: React.ElementType;
 }
 
 export function GradientText({
   className,
   children,
-  as: Component = "span",
   ...props
 }: GradientTextProps) {
-  // framer-motion wraps any HTML element
-  const MotionComponent = motion.create(Component as keyof React.JSX.IntrinsicElements);
-
   return (
-    <MotionComponent
+    <motion.span
       className={cn(
         "relative inline-block",
         "bg-gradient-to-br from-forge-bright via-forge-text to-forge-subtle",
@@ -34,6 +28,6 @@ export function GradientText({
       {...props}
     >
       {children}
-    </MotionComponent>
+    </motion.span>
   );
 }
