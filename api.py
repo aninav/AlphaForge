@@ -30,12 +30,15 @@ app = FastAPI(title="AlphaForge API", version="2.0.0")
 # ── CORS — allow Next.js dev server ──────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://alphaforgeterminal.vercel.app",   
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def df_to_records(df: pd.DataFrame) -> list[dict]:
