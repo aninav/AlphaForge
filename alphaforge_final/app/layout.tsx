@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Mono, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth-provider";
 
 const dmMono = DM_Mono({
   subsets: ["latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${dmMono.variable} ${playfair.variable}`}>
-      <body className="bg-forge-bg text-forge-text antialiased">{children}</body>
+      <body className="bg-forge-bg text-forge-text antialiased">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
