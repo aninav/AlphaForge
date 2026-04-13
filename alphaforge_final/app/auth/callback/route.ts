@@ -1,5 +1,5 @@
+import { createClient } from "@/lib/supabase"
 import { NextResponse } from "next/server"
-import { createServerSupabaseClient } from "@/lib/supabase-server"
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -7,13 +7,13 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/terminal"
 
   if (code) {
-    const supabase = await createServerSupabaseClient()
+    const supabase = createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
     }
   }
 
-  // Auth failed — redirect to auth page with error
-  return NextResponse.redirect(`${origin}/auth?error=auth_failed`)
+  // Return to landing page on error
+  return NextResponse.redirect(`${origin}/?error=auth`)
 }

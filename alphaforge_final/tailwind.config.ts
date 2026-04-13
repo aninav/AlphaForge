@@ -6,6 +6,7 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
@@ -14,22 +15,27 @@ const config: Config = {
       },
       colors: {
         forge: {
-          bg:      "#0b0b0b",
-          surface: "#0f0f0d",
-          panel:   "#111110",
-          border:  "#1a1a18",
-          dim:     "#222220",
-          muted:   "#333330",
-          subtle:  "#4a4845",
-          mid:     "#6b6963",
-          text:    "#c8c5bc",
-          bright:  "#e8e6e0",
-          pos:     "#3d7a4a",
-          neg:     "#7a3d3d",
-          warn:    "#7a6a3d",
-          "pos-dim":  "#1e3320",
-          "neg-dim":  "#331e1e",
-          "warn-dim": "#332d1e",
+          // Backgrounds
+          bg:      "var(--forge-bg)",
+          surface: "var(--forge-surface)",
+          panel:   "var(--forge-panel)",
+          border:  "var(--forge-border)",
+          dim:     "var(--forge-dim)",
+          muted:   "var(--forge-muted)",
+          // Foregrounds (all WCAG AA compliant)
+          subtle:  "var(--forge-subtle)",
+          accent:  "var(--forge-accent)",
+          label:   "var(--forge-label)",
+          body:    "var(--forge-body)",
+          text:    "var(--forge-text)",
+          bright:  "var(--forge-bright)",
+          // Semantic
+          pos:        "var(--forge-pos)",
+          neg:        "var(--forge-neg)",
+          warn:       "var(--forge-warn)",
+          "pos-dim":  "var(--forge-pos-dim)",
+          "neg-dim":  "var(--forge-neg-dim)",
+          "warn-dim": "var(--forge-warn-dim)",
         },
       },
     },
