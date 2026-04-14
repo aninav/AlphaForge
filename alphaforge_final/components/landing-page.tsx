@@ -94,7 +94,7 @@ export function LandingPage() {
           ) : (
             <InteractiveHoverButton
               text={user ? "Enter Terminal" : "Get Started"}
-              onClick={() => router.push(user ? "/terminal" : "/login")}
+              onClick={() => router.push(user ? "/terminal" : "/auth")}
             />
           )}
         </Reveal>
