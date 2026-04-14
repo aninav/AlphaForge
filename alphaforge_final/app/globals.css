@@ -12,12 +12,12 @@
   --forge-dim:      #222220;
   --forge-muted:    #333330;
 
-  --forge-subtle:   #6e6b63;  /* 4.6:1 on bg  */
-  --forge-accent:   #8a8680;  /* 5.2:1 on bg  */
-  --forge-label:    #7a7670;  /* 4.8:1 on bg  */
-  --forge-body:     #a8a49c;  /* 6.8:1 on bg  */
-  --forge-text:     #c8c5bc;  /* 9.1:1 on bg  */
-  --forge-bright:   #e8e6e0;  /* 13.2:1 on bg */
+  --forge-subtle:   #6e6b63;
+  --forge-accent:   #8a8680;
+  --forge-label:    #7a7670;
+  --forge-body:     #a8a49c;
+  --forge-text:     #c8c5bc;
+  --forge-bright:   #e8e6e0;
 
   --forge-pos:      #4a9b5a;
   --forge-neg:      #9b4a4a;
@@ -28,6 +28,7 @@
 }
 
 /* ── Light theme ──────────────────────────────────────────────────── */
+/* next-themes adds class="light" on <html> — must match exactly */
 .light {
   --forge-bg:       #f5f4f0;
   --forge-surface:  #eeede9;
@@ -36,12 +37,12 @@
   --forge-dim:      #c4c2bc;
   --forge-muted:    #b0aea8;
 
-  --forge-subtle:   #5a5852;  /* 4.6:1 on light bg */
-  --forge-accent:   #4a4844;  /* 6.2:1 on light bg */
-  --forge-label:    #524f4b;  /* 5.4:1 on light bg */
-  --forge-body:     #3a3834;  /* 8.1:1 on light bg */
-  --forge-text:     #1e1d1a;  /* 12.4:1 on light bg */
-  --forge-bright:   #0b0b0b;  /* 17.1:1 on light bg */
+  --forge-subtle:   #5a5852;
+  --forge-accent:   #4a4844;
+  --forge-label:    #524f4b;
+  --forge-body:     #3a3834;
+  --forge-text:     #1e1d1a;
+  --forge-bright:   #0b0b0b;
 
   --forge-pos:      #2d6b3a;
   --forge-neg:      #6b2d2d;
@@ -62,4 +63,12 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+/* Prevent flash of unstyled content on theme switch */
+html {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
 }
