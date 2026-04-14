@@ -3,14 +3,16 @@
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useBacktest } from "@/hooks/use-backtest"
-import { Sidebar } from "./sidebar"
+import { Sidebar }      from "./sidebar"
 import { TabHome }      from "./tab-home"
 import { TabStrategy }  from "./tab-strategy"
 import { TabEvents }    from "./tab-events"
 import { TabPortfolio } from "./tab-portfolio"
 import { TabTrades }    from "./tab-trades"
 import { TabLive }      from "./tab-live"
-import { C } from "./design-system"
+import { C }            from "./design-system"
+import { Theme }        from "@/components/ui/theme"
+import { useAuth }      from "@/components/auth-provider"
 import type { TerminalParams } from "@/types"
 
 const DEFAULT_PARAMS: TerminalParams = {
@@ -33,12 +35,12 @@ type Tab = typeof TABS[number]
 
 export function Terminal() {
   const router = useRouter()
-  const [params,  setParams]  = useState<TerminalParams>(DEFAULT_PARAMS)
-  const [pending, setPending] = useState<TerminalParams>(DEFAULT_PARAMS)
+  const { user, signOut } = useAuth()
+  const [params,    setParams]    = useState<TerminalParams>(DEFAULT_PARAMS)
+  const [pending,   setPending]   = useState<TerminalParams>(DEFAULT_PARAMS)
   const [activeTab, setActiveTab] = useState<Tab>("Home")
 
-  // Only fetch when params are committed (Run button)
-  const { data, loading, error, refetch } = useBacktest(params)
+  const { data, loading, error } = useBacktest(params)
 
   const handleChange = useCallback((patch: Partial<TerminalParams>) => {
     setPending(p => ({ ...p, ...patch }))
@@ -51,7 +53,7 @@ export function Terminal() {
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: C.bg }}>
 
-      {/* ── Top nav bar ───────────────────────────────────────────────────── */}
+      {/* ── Top nav bar ───────────────────────────────────────────── */}
       <header
         className="flex-shrink-0 flex items-center justify-between px-5 h-11 border-b"
         style={{ background: C.surface, borderColor: C.border }}
@@ -88,14 +90,31 @@ export function Terminal() {
           ))}
         </nav>
 
-        {/* Right: back + mode badge */}
+        {/* Right: theme toggle, mode badge, user, back */}
         <div className="flex items-center gap-3">
+          {/* Theme toggle */}
+          <Theme variant="button" size="sm" />
+
           <span
             className="font-mono text-[8px] tracking-[0.2em] uppercase border px-2 py-0.5"
             style={{ color: C.mid, borderColor: C.dim }}
           >
             {params.mode === "walkforward" ? "Walk-Fwd" : params.mode}
           </span>
+
+          {/* Logout */}
+          {user && (
+            <button
+              onClick={signOut}
+              className="font-mono text-[8px] tracking-[0.15em] uppercase border px-2.5 py-1 transition-colors"
+              style={{ color: C.muted, borderColor: C.dim, background: "transparent" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = C.text }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = C.muted }}
+            >
+              Log out
+            </button>
+          )}
+
           <button
             onClick={() => router.push("/")}
             className="font-mono text-[8px] tracking-[0.15em] uppercase border px-2.5 py-1 transition-colors"
@@ -108,7 +127,7 @@ export function Terminal() {
         </div>
       </header>
 
-      {/* ── Main area: sidebar + content ──────────────────────────────────── */}
+      {/* ── Main area: sidebar + content ──────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           params={pending}
@@ -117,7 +136,6 @@ export function Terminal() {
           loading={loading}
         />
 
-        {/* Tab content */}
         <main className="flex-1 flex flex-col overflow-hidden" style={{ background: C.bg }}>
           {params.mode === "live" ? (
             <TabLive params={params} />

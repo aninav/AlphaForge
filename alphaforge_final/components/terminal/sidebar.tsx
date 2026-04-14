@@ -1,7 +1,12 @@
 "use client"
 
-import { C, Label, ForgeSlider, ForgeSelect, GhostButton, Divider } from "./design-system"
+import { C, Label, ForgeSlider, ForgeSelect, Divider } from "./design-system"
+import { ETFSearch } from "./etf-search"
 import type { TerminalParams } from "@/types"
+
+// Earliest date yfinance reliably has data for common ETFs
+const MIN_DATE = "1993-01-29" // SPY inception — practical floor
+const MAX_DATE = new Date().toISOString().split("T")[0] // today
 
 interface SidebarProps {
   params: TerminalParams
@@ -18,40 +23,43 @@ export function Sidebar({ params, onChange, onRun, loading }: SidebarProps) {
     >
       <div className="p-4 flex-1">
 
-        {/* Ticker */}
-        <div className="mb-4">
-          <Label>Ticker</Label>
-          <input
-            type="text"
-            value={params.ticker}
-            onChange={e => onChange({ ticker: e.target.value.toUpperCase() })}
-            className="w-full font-mono text-[11px] border px-2 py-1.5 uppercase tracking-widest"
-            style={{ background: C.bg, color: C.text, borderColor: C.dim, outline: "none" }}
-          />
-        </div>
+        {/* ETF search */}
+        <ETFSearch
+          value={params.ticker}
+          onChange={ticker => onChange({ ticker })}
+        />
 
         {/* Date range */}
-        <div className="mb-4">
+        <div className="mb-1">
           <Label>Start date</Label>
           <input
             type="date"
             value={params.start}
+            min={MIN_DATE}
+            max={params.end}
             onChange={e => onChange({ start: e.target.value })}
-            className="w-full font-mono text-[10px] border px-2 py-1.5"
-            style={{ background: C.bg, color: C.text, borderColor: C.dim,
-                     outline: "none", colorScheme: "dark" }}
+            className="w-full font-mono text-[10px] border px-2 py-1.5 outline-none"
+            style={{ background: C.bg, color: C.text, borderColor: C.dim, colorScheme: "dark" }}
           />
+          <p className="font-mono text-[8px] mt-1" style={{ color: C.muted }}>
+            earliest: {MIN_DATE}
+          </p>
         </div>
-        <div className="mb-4">
+
+        <div className="mb-4 mt-3">
           <Label>End date</Label>
           <input
             type="date"
             value={params.end}
+            min={params.start}
+            max={MAX_DATE}
             onChange={e => onChange({ end: e.target.value })}
-            className="w-full font-mono text-[10px] border px-2 py-1.5"
-            style={{ background: C.bg, color: C.text, borderColor: C.dim,
-                     outline: "none", colorScheme: "dark" }}
+            className="w-full font-mono text-[10px] border px-2 py-1.5 outline-none"
+            style={{ background: C.bg, color: C.text, borderColor: C.dim, colorScheme: "dark" }}
           />
+          <p className="font-mono text-[8px] mt-1" style={{ color: C.muted }}>
+            latest: today
+          </p>
         </div>
 
         <Divider />
@@ -104,8 +112,7 @@ export function Sidebar({ params, onChange, onRun, loading }: SidebarProps) {
 
         {/* Allow short toggle */}
         <div className="flex items-center justify-between mb-4">
-          <span className="font-mono text-[9px] tracking-[0.2em] uppercase"
-                style={{ color: C.muted }}>
+          <span className="font-mono text-[9px] tracking-[0.2em] uppercase" style={{ color: C.muted }}>
             Allow Short
           </span>
           <button
