@@ -1,43 +1,147 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
+import { ArrowRight, BookOpen, ChartNoAxesCombined, Newspaper, ScanSearch, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { BackgroundPaths } from "@/components/ui/background-paths";
 import { GradientText } from "@/components/ui/gradient-text";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { Theme } from "@/components/ui/theme";
-import { useAuth } from "@/components/auth-provider";
+import { getAllPosts } from "@/lib/blog";
+import { formatDateLabel } from "@/lib/date";
 
-function Reveal({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
+const blogPosts = getAllPosts().slice(0, 3);
+
+const featureCards = [
+  {
+    icon: ChartNoAxesCombined,
+    eyebrow: "Research Workflow",
+    title: "Backtests that stay anchored to market context",
+    body: "Explore trend, volatility, and drawdown behavior in one workflow so strategy results are easier to trust and explain.",
+  },
+  {
+    icon: ScanSearch,
+    eyebrow: "Regime Analysis",
+    title: "See when conditions change before the signal does",
+    body: "Track market regime shifts, live posture, and event-driven volatility from a single terminal built for systematic decision-making.",
+  },
+  {
+    icon: Newspaper,
+    eyebrow: "Content Engine",
+    title: "Publishable blog content that compounds SEO over time",
+    body: "Use the built-in blog structure to explain your product, target search intent, and create stronger internal linking from content to conversion pages.",
+  },
+];
+
+const sections = [
+  {
+    label: "Who it is for",
+    title: "Built for traders, researchers, and teams that need more than a hero screen",
+    body: "AlphaForge turns the landing page into a product narrative and the terminal into a decision surface. Visitors can understand the workflow before they sign in, and search engines can crawl clear structured content instead of a single call to action.",
+    bullets: ["Explain the strategy workflow in plain language", "Surface regime, strategy, and event context together", "Create crawlable pages that support organic discovery"],
+  },
+  {
+    label: "What changes",
+    title: "From single-screen teaser to scrollable product story",
+    body: "The new landing experience introduces product sections, proof points, and a blog preview so users can keep scrolling to understand what AlphaForge actually does.",
+    bullets: ["Feature blocks with product outcomes", "Integrated article previews for blog discovery", "SEO-friendly headings, metadata, and internal links"],
+  },
+];
+
+function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   return (
-    <motion.div className={className} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay }}>
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay }}
+    >
       {children}
     </motion.div>
   );
 }
 
-function CornerMarks() {
-  const corners = ["top-5 left-5 border-t border-l","top-5 right-5 border-t border-r","bottom-5 left-5 border-b border-l","bottom-5 right-5 border-b border-r"];
-  return <>{corners.map((c, i) => <span key={i} className={`absolute w-4 h-4 border-forge-dim opacity-30 pointer-events-none ${c}`} />)}</>;
+function TopBar({
+  signedInEmail,
+  onSignOut,
+}: {
+  signedInEmail?: string;
+  onSignOut: () => void;
+}) {
+  return (
+    <motion.div
+      className="sticky top-0 z-40 border-b border-forge-border/70 bg-forge-bg/80 backdrop-blur-xl"
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55 }}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-5">
+          <Link href="/" className="font-serif text-2xl font-bold tracking-tight text-forge-bright">
+            AlphaForge
+          </Link>
+          <div className="hidden items-center gap-4 font-mono text-[10px] uppercase tracking-[0.24em] text-forge-label md:flex">
+            <a href="#platform">Platform</a>
+            <a href="#workflow">Workflow</a>
+            <Link href="/blog">Blog</Link>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Theme variant="dropdown" size="sm" showLabel />
+          {signedInEmail ? (
+            <>
+              <span className="hidden max-w-[220px] truncate font-mono text-[10px] tracking-[0.16em] text-forge-body md:block">
+                {signedInEmail}
+              </span>
+              <button
+                onClick={onSignOut}
+                className="border border-forge-dim px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <Link
+              href="/blog"
+              className="hidden border border-forge-dim px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright md:block"
+            >
+              Read blog
+            </Link>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
-function StatusStrip() {
-  const items = [
-    { label: "Regime",  value: "Trending", color: "text-forge-pos" },
-    { label: "Signal",  value: "Long",     color: "text-forge-pos" },
-    { label: "Vol pct", value: "34%",      color: "text-forge-accent" },
-    { label: "Sharpe",  value: "1.42",     color: "text-forge-accent" },
-    { label: "Mode",    value: "Backtest", color: "text-forge-accent" },
+function StatRail() {
+  const stats = [
+    { label: "Market regimes", value: "Trend-aware views" },
+    { label: "Strategy testing", value: "Backtest + live mode" },
+    { label: "Content depth", value: "Blog-ready SEO" },
   ];
+
   return (
-    <motion.div className="absolute bottom-7 left-0 right-0 flex justify-center gap-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4, duration: 0.8 }}>
-      {items.map(({ label, value, color }) => (
-        <div key={label} className="flex flex-col items-center gap-1">
-          <span className="font-mono text-[8px] tracking-[0.28em] uppercase text-forge-label">{label}</span>
-          <span className={`font-mono text-[10px] tracking-wider ${color}`}>{value}</span>
+    <div className="grid gap-4 md:grid-cols-3">
+      {stats.map((stat) => (
+        <div key={stat.label} className="border border-forge-border/80 bg-forge-panel/70 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-forge-label">{stat.label}</p>
+          <p className="mt-3 font-serif text-2xl font-bold text-forge-bright">{stat.value}</p>
         </div>
       ))}
-    </motion.div>
+    </div>
   );
 }
 
@@ -46,61 +150,223 @@ export function LandingPage() {
   const { user, loading, signOut } = useAuth();
 
   return (
-    <div className="relative min-h-screen w-full bg-forge-bg flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-forge-bg text-forge-text">
       <BackgroundPaths />
-      <CornerMarks />
-      <div className="absolute top-1/2 left-0 right-0 h-px bg-forge-border opacity-20 pointer-events-none" />
 
-      {/* Top bar */}
-      <motion.div className="absolute top-5 left-0 right-0 z-20 px-6 flex items-center justify-between" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-        <Theme variant="dropdown" size="sm" showLabel />
-        {!loading && user && (
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[9px] tracking-[0.2em] text-forge-label truncate max-w-[160px]">{user.email}</span>
-            <button onClick={signOut} className="font-mono text-[9px] tracking-[0.25em] uppercase text-forge-body hover:text-forge-text border border-forge-dim hover:border-forge-muted px-2.5 py-1 transition-colors duration-200">
-              Log out
-            </button>
+      <div className="absolute inset-x-0 top-24 h-[520px] bg-[radial-gradient(circle_at_top,rgba(120,212,255,0.18),transparent_54%)]" />
+      <TopBar signedInEmail={user?.email} onSignOut={signOut} />
+
+      <main className="relative z-10">
+        <section className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl items-center gap-14 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
+          <div>
+            <Reveal>
+              <p className="mb-6 inline-flex items-center gap-2 border border-forge-dim/80 bg-forge-panel/70 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.28em] text-forge-label">
+                <Sparkles className="h-3.5 w-3.5 text-forge-accent" />
+                Systematic research terminal
+              </p>
+            </Reveal>
+
+            <GradientText as="h1" className="max-w-4xl font-serif text-[clamp(4rem,9vw,7.4rem)] font-extrabold leading-[0.92] tracking-[-0.04em]">
+              Understand the strategy before users ever click enter.
+            </GradientText>
+
+            <Reveal delay={0.08} className="mt-8 max-w-2xl">
+              <p className="text-lg leading-8 text-forge-body md:text-xl">
+                AlphaForge now tells a fuller story: market regime analysis, strategy validation, event-driven research,
+                and a blog layer that helps explain the product to both visitors and search engines.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.14} className="mt-10 flex flex-col gap-4 sm:flex-row">
+              {loading ? (
+                <div className="h-12 w-52 animate-pulse border border-forge-dim bg-forge-surface/60" />
+              ) : (
+                <InteractiveHoverButton
+                  text={user ? "Enter Terminal" : "Get Started"}
+                  onClick={() => router.push(user ? "/terminal" : "/auth")}
+                />
+              )}
+
+              <Link
+                href="/blog"
+                className="inline-flex h-12 items-center justify-center gap-2 border border-forge-dim bg-forge-surface/50 px-6 font-mono text-[10px] uppercase tracking-[0.22em] text-forge-text transition-colors hover:border-forge-accent hover:text-forge-bright"
+              >
+                Explore blog
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Reveal>
+
+            <Reveal delay={0.2} className="mt-12">
+              <StatRail />
+            </Reveal>
           </div>
-        )}
-      </motion.div>
 
-      {/* Hero */}
-      <div className="relative z-10 flex flex-col items-center text-center px-6">
-        <Reveal delay={0.1}>
-          <p className="font-mono text-[9px] tracking-[0.35em] uppercase text-forge-label mb-8">v2.1 &nbsp;·&nbsp; systematic research</p>
-        </Reveal>
+          <Reveal delay={0.18}>
+            <div className="relative overflow-hidden border border-forge-border/90 bg-forge-surface/80 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(120,212,255,0.12),transparent_38%)]" />
+              <div className="relative">
+                <div className="flex items-center justify-between border-b border-forge-border/80 pb-4">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-forge-label">AlphaForge Terminal</p>
+                    <p className="mt-2 font-serif text-3xl font-bold text-forge-bright">Scrollable product clarity</p>
+                  </div>
+                  <BookOpen className="h-8 w-8 text-forge-accent" />
+                </div>
 
-        <GradientText as="h1" className="font-serif text-[clamp(64px,12vw,104px)] font-extrabold leading-none tracking-[-0.03em] mb-0">
-          AlphaForge
-        </GradientText>
+                <div className="mt-6 space-y-4">
+                  {featureCards.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                      <div key={card.title} className="border border-forge-border/80 bg-forge-panel/80 p-4">
+                        <div className="flex items-start gap-4">
+                          <div className="mt-1 rounded-full border border-forge-dim/80 bg-forge-pos-dim p-2 text-forge-pos">
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-forge-label">{card.eyebrow}</p>
+                            <h2 className="mt-2 font-serif text-2xl font-bold text-forge-bright">{card.title}</h2>
+                            <p className="mt-3 text-sm leading-7 text-forge-body">{card.body}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
 
-        <Reveal delay={0.55}>
-          <div className="w-10 h-px bg-forge-dim mx-auto my-7" />
-        </Reveal>
+        <section id="platform" className="mx-auto max-w-7xl px-6 py-10 md:py-20">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {sections.map((section, index) => (
+              <Reveal key={section.title} delay={index * 0.08}>
+                <div className="h-full border border-forge-border/80 bg-forge-surface/70 p-8">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-forge-accent">{section.label}</p>
+                  <h2 className="mt-4 max-w-xl font-serif text-4xl font-bold leading-tight text-forge-bright">{section.title}</h2>
+                  <p className="mt-5 max-w-xl text-base leading-8 text-forge-body">{section.body}</p>
+                  <div className="mt-8 space-y-3">
+                    {section.bullets.map((bullet) => (
+                      <div key={bullet} className="flex items-start gap-3 border-t border-forge-border/70 pt-3">
+                        <span className="mt-1 h-2 w-2 rounded-full bg-forge-accent" />
+                        <p className="text-sm leading-7 text-forge-text">{bullet}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
 
-        <Reveal delay={0.65}>
-          <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-forge-body mb-3">Systematic Strategy Research Terminal</p>
-        </Reveal>
+        <section id="workflow" className="mx-auto max-w-7xl px-6 py-10 md:py-20">
+          <Reveal>
+            <div className="mb-10 max-w-3xl">
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Workflow</p>
+              <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">A landing page that explains the product in layers</h2>
+              <p className="mt-5 text-lg leading-8 text-forge-body">
+                The updated experience is structured for both humans and crawlers: a clear hero, product sections, proof-oriented copy,
+                and blog entries that reinforce the core use cases around systematic research.
+              </p>
+            </div>
+          </Reveal>
 
-        <Reveal delay={0.75}>
-          <p className="font-mono text-[12px] text-forge-body leading-relaxed max-w-sm mb-12">
-            Research market regimes, test strategies,<br />and analyse event-driven volatility.
-          </p>
-        </Reveal>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              ["01", "Context", "Explain who AlphaForge is for and why market regime context matters before a backtest even starts."],
+              ["02", "Capability", "Show the features users care about: testing, signals, events, and a cleaner terminal experience."],
+              ["03", "Discovery", "Turn blog posts into SEO entry points that funnel visitors into the product narrative and terminal."],
+            ].map(([step, title, body], index) => (
+              <Reveal key={title} delay={index * 0.08}>
+                <div className="h-full border border-forge-border/80 bg-forge-panel/75 p-6">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-forge-label">{step}</p>
+                  <h3 className="mt-4 font-serif text-3xl font-bold text-forge-bright">{title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-forge-body">{body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
 
-        <Reveal delay={0.9}>
-          {loading ? (
-            <div className="h-10 w-36 bg-forge-surface border border-forge-dim animate-pulse" />
-          ) : (
-            <InteractiveHoverButton
-              text={user ? "Enter Terminal" : "Get Started"}
-              onClick={() => router.push(user ? "/terminal" : "/auth")}
-            />
-          )}
-        </Reveal>
-      </div>
+        <section className="mx-auto max-w-7xl px-6 py-10 md:py-20">
+          <Reveal>
+            <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-3xl">
+                <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Blog</p>
+                <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">Built-in content for product education and SEO</h2>
+                <p className="mt-5 text-lg leading-8 text-forge-body">
+                  Each article can target high-intent search topics while reinforcing the same product story users see on the landing page.
+                </p>
+              </div>
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 self-start border border-forge-dim px-4 py-3 font-mono text-[10px] uppercase tracking-[0.24em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright"
+              >
+                View all posts
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </Reveal>
 
-      <StatusStrip />
+          <div className="grid gap-5 lg:grid-cols-3">
+            {blogPosts.map((post, index) => (
+              <Reveal key={post.slug} delay={index * 0.08}>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="group flex h-full flex-col border border-forge-border/80 bg-forge-surface/70 p-6 transition-transform duration-300 hover:-translate-y-1 hover:border-forge-accent/60"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-forge-accent">{post.category}</span>
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-forge-label">{post.readingTime}</span>
+                  </div>
+                  <h3 className="mt-5 font-serif text-3xl font-bold leading-tight text-forge-bright">{post.title}</h3>
+                  <p className="mt-4 flex-1 text-sm leading-7 text-forge-body">{post.description}</p>
+                  <div className="mt-8 flex items-center justify-between border-t border-forge-border/70 pt-4">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-forge-label">{formatDateLabel(post.publishedAt)}</span>
+                    <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-text">
+                      Read article
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-6 pb-16 pt-10 md:pb-24 md:pt-20">
+          <Reveal>
+            <div className="overflow-hidden border border-forge-border/80 bg-forge-surface/70 p-8 md:p-10">
+              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Next step</p>
+                  <h2 className="mt-4 max-w-3xl font-serif text-5xl font-bold leading-tight text-forge-bright">
+                    Give users enough signal to care before they ever open the terminal.
+                  </h2>
+                  <p className="mt-5 max-w-2xl text-lg leading-8 text-forge-body">
+                    The landing page now teaches, the blog now compounds search visibility, and the terminal can present dates and text with much better contrast and clarity.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
+                  {!loading && (
+                    <InteractiveHoverButton
+                      text={user ? "Enter Terminal" : "Create Account"}
+                      onClick={() => router.push(user ? "/terminal" : "/auth")}
+                    />
+                  )}
+                  <Link
+                    href="/blog"
+                    className="inline-flex h-12 items-center justify-center border border-forge-dim px-6 font-mono text-[10px] uppercase tracking-[0.24em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright"
+                  >
+                    Visit the blog
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+      </main>
     </div>
   );
 }
