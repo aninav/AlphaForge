@@ -29,24 +29,24 @@ const featureCards = [
   },
   {
     icon: Newspaper,
-    eyebrow: "Content Engine",
-    title: "Publishable blog content that compounds SEO over time",
-    body: "Use the built-in blog structure to explain your product, target search intent, and create stronger internal linking from content to conversion pages.",
+    eyebrow: "Event Intelligence",
+    title: "Know what's moving the market before you size a position",
+    body: "Layer macro events, earnings, and catalyst timelines directly onto your strategy view so you're never caught off guard by scheduled volatility.",
   },
 ];
 
 const sections = [
   {
     label: "Who it is for",
-    title: "Built for traders, researchers, and teams that need more than a hero screen",
-    body: "AlphaForge turns the landing page into a product narrative and the terminal into a decision surface. Visitors can understand the workflow before they sign in, and search engines can crawl clear structured content instead of a single call to action.",
-    bullets: ["Explain the strategy workflow in plain language", "Surface regime, strategy, and event context together", "Create crawlable pages that support organic discovery"],
+    title: "Built for traders and researchers who need more than a chart",
+    body: "AlphaForge is a systematic research terminal for people who think in strategies, not hunches. It combines regime context, backtest validation, and event-driven signals into a single surface so you can make decisions with the full picture in view.",
+    bullets: ["Understand why a strategy works, not just that it worked", "Combine regime context with backtest results in one workflow", "Surface event risk before it shows up in your P&L"],
   },
   {
-    label: "What changes",
-    title: "From single-screen teaser to scrollable product story",
-    body: "The new landing experience introduces product sections, proof points, and a blog preview so users can keep scrolling to understand what AlphaForge actually does.",
-    bullets: ["Feature blocks with product outcomes", "Integrated article previews for blog discovery", "SEO-friendly headings, metadata, and internal links"],
+    label: "What it replaces",
+    title: "From scattered tools to one coherent research surface",
+    body: "Most traders piece together a backtest engine, a regime tracker, a news feed, and a spreadsheet. AlphaForge collapses that stack into a single terminal purpose-built for systematic decision-making.",
+    bullets: ["One workspace for testing, monitoring, and analyzing", "Strategy and regime context always visible together", "Built for iterating fast without losing the thread"],
   },
 ];
 
@@ -130,7 +130,7 @@ function StatRail() {
   const stats = [
     { label: "Market regimes", value: "Trend-aware views" },
     { label: "Strategy testing", value: "Backtest + live mode" },
-    { label: "Content depth", value: "Blog-ready SEO" },
+    { label: "Event coverage", value: "Catalyst timeline" },
   ];
 
   return (
@@ -167,13 +167,13 @@ export function LandingPage() {
             </Reveal>
 
             <GradientText as="h1" className="max-w-4xl font-serif text-[clamp(4rem,9vw,7.4rem)] font-extrabold leading-[0.92] tracking-[-0.04em]">
-              Understand the strategy before users ever click enter.
+              Research smarter. Trade with conviction.
             </GradientText>
 
             <Reveal delay={0.08} className="mt-8 max-w-2xl">
               <p className="text-lg leading-8 text-forge-body md:text-xl">
-                AlphaForge now tells a fuller story: market regime analysis, strategy validation, event-driven research,
-                and a blog layer that helps explain the product to both visitors and search engines.
+                AlphaForge is the terminal for systematic traders — combining market regime analysis,
+                strategy backtesting, and event-driven research into one coherent workflow.
               </p>
             </Reveal>
 
@@ -208,7 +208,7 @@ export function LandingPage() {
                 <div className="flex items-center justify-between border-b border-forge-border/80 pb-4">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-forge-label">AlphaForge Terminal</p>
-                    <p className="mt-2 font-serif text-3xl font-bold text-forge-bright">Scrollable product clarity</p>
+                    <p className="mt-2 font-serif text-3xl font-bold text-forge-bright">Strategy meets market reality</p>
                   </div>
                   <BookOpen className="h-8 w-8 text-forge-accent" />
                 </div>
@@ -263,19 +263,19 @@ export function LandingPage() {
           <Reveal>
             <div className="mb-10 max-w-3xl">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Workflow</p>
-              <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">A landing page that explains the product in layers</h2>
+              <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">From first signal to sized position</h2>
               <p className="mt-5 text-lg leading-8 text-forge-body">
-                The updated experience is structured for both humans and crawlers: a clear hero, product sections, proof-oriented copy,
-                and blog entries that reinforce the core use cases around systematic research.
+                AlphaForge structures your research in three stages — so you always know what the market is doing,
+                whether your strategy fits, and what risks are on the horizon.
               </p>
             </div>
           </Reveal>
 
           <div className="grid gap-5 md:grid-cols-3">
             {[
-              ["01", "Context", "Explain who AlphaForge is for and why market regime context matters before a backtest even starts."],
-              ["02", "Capability", "Show the features users care about: testing, signals, events, and a cleaner terminal experience."],
-              ["03", "Discovery", "Turn blog posts into SEO entry points that funnel visitors into the product narrative and terminal."],
+              ["01", "Orient", "Understand the current market regime — trend direction, volatility state, and macro posture — before committing to any strategy."],
+              ["02", "Validate", "Run backtests with full regime context attached so results reflect real conditions, not just favorable historical windows."],
+              ["03", "Execute", "Monitor live positions alongside event calendars and regime shifts so you're never surprised by what the market already knew."],
             ].map(([step, title, body], index) => (
               <Reveal key={title} delay={index * 0.08}>
                 <div className="h-full border border-forge-border/80 bg-forge-panel/75 p-6">
@@ -293,9 +293,9 @@ export function LandingPage() {
             <div className="mb-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
               <div className="max-w-3xl">
                 <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Blog</p>
-                <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">Built-in content for product education and SEO</h2>
+                <h2 className="mt-4 font-serif text-5xl font-bold tracking-tight text-forge-bright">From the research desk</h2>
                 <p className="mt-5 text-lg leading-8 text-forge-body">
-                  Each article can target high-intent search topics while reinforcing the same product story users see on the landing page.
+                  Market regime breakdowns, strategy deep-dives, and systematic research frameworks — written for traders who think in systems.
                 </p>
               </div>
               <Link
@@ -341,10 +341,10 @@ export function LandingPage() {
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-forge-accent">Next step</p>
                   <h2 className="mt-4 max-w-3xl font-serif text-5xl font-bold leading-tight text-forge-bright">
-                    Give users enough signal to care before they ever open the terminal.
+                    Stop guessing at market context. Start researching with it.
                   </h2>
                   <p className="mt-5 max-w-2xl text-lg leading-8 text-forge-body">
-                    The landing page now teaches, the blog now compounds search visibility, and the terminal can present dates and text with much better contrast and clarity.
+                    AlphaForge gives you the full picture — regime state, strategy performance, and upcoming catalysts — all in one place, before you make a move.
                   </p>
                 </div>
 
