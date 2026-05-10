@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "csv-parser": "^3.2.1"
+  },
+  "name": "alpha-forge",
+  "version": "1.0.0",
+  "description": "A modular systematic trading desk built with Streamlit + Plotly.",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aninav/quant-backtester.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aninav/quant-backtester/issues"
+  },
+  "homepage": "https://github.com/aninav/quant-backtester#readme"
+}
