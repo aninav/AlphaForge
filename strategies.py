@@ -180,3 +180,312 @@ def rotation_signal(
             selected[date] = best
 
     return selected
+
+
+# ---------------------------------------------------------------------------
+# Trend Following Strategy
+# ---------------------------------------------------------------------------
+
+def trend_following_signal(
+    df: pd.DataFrame,
+    fast: int = 20,
+    slow: int = 100,
+    allow_short: bool = False,
+) -> pd.DataFrame:
+    """
+    Long when price is above slow SMA and fast SMA > slow SMA (confirmed uptrend).
+    Short (if allowed) when price is below slow SMA and fast SMA < slow SMA.
+    Flat otherwise.
+
+    Requires SMA_{fast} and SMA_{slow} columns.
+    """
+    fast_col = f"SMA_{fast}"
+    slow_col = f"SMA_{slow}"
+
+    for col in [fast_col, slow_col]:
+        if col not in df.columns:
+            raise ValueError(
+                f"Missing column '{col}'. Run indicators.add_sma() first."
+            )
+
+    close = df["Close"]
+    fast_sma = df[fast_col]
+    slow_sma = df[slow_col]
+
+    long_cond  = (close > slow_sma) & (fast_sma > slow_sma)
+    short_cond = (close < slow_sma) & (fast_sma < slow_sma)
+
+    df["Signal"] = np.where(
+        long_cond, 1,
+        np.where(short_cond & allow_short, -1, 0)
+    )
+    df["Signal"] = df["Signal"].where(fast_sma.notna() & slow_sma.notna(), 0)
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Breakout Strategy
+# ---------------------------------------------------------------------------
+
+def breakout_signal(
+    df: pd.DataFrame,
+    window: int = 20,
+    allow_short: bool = False,
+) -> pd.DataFrame:
+    """
+    Donchian channel breakout.
+      • Long  when Close breaks ABOVE the highest high of the last `window` bars.
+      • Short when Close breaks BELOW the lowest  low  of the last `window` bars.
+      • Flat  otherwise.
+
+    Requires High and Low columns in df.
+    """
+    if "High" not in df.columns or "Low" not in df.columns:
+        raise ValueError("Missing 'High' or 'Low' columns for breakout strategy.")
+
+    upper_channel = df["High"].shift(1).rolling(window).max()
+    lower_channel = df["Low"].shift(1).rolling(window).min()
+
+    long_cond  = df["Close"] > upper_channel
+    short_cond = df["Close"] < lower_channel
+
+    df["Signal"] = np.where(
+        long_cond, 1,
+        np.where(short_cond & allow_short, -1, 0)
+    )
+    df["Signal"] = df["Signal"].where(upper_channel.notna(), 0)
+    return df
+
+
+# ---------------------------------------------------------------------------
+# RSI Mean Reversion Strategy
+# ---------------------------------------------------------------------------
+
+def rsi_mean_reversion_signal(
+    df: pd.DataFrame,
+    oversold: float = 30.0,
+    overbought: float = 70.0,
+    allow_short: bool = False,
+) -> pd.DataFrame:
+    """
+    State-machine RSI mean reversion.
+      • Enter LONG  when RSI crosses below `oversold`  (e.g. 30)
+      • Exit  LONG  when RSI crosses above 50
+      • Enter SHORT when RSI crosses above `overbought` (e.g. 70), if allowed
+      • Exit  SHORT when RSI crosses below 50
+
+    Requires 'RSI' column (add via indicators.add_rsi).
+    """
+    if "RSI" not in df.columns:
+        raise ValueError("Missing 'RSI' column. Run indicators.add_rsi() first.")
+
+    rsi    = df["RSI"].values
+    n      = len(df)
+    signal = np.zeros(n, dtype=int)
+    state  = 0
+
+    for i in range(n):
+        if np.isnan(rsi[i]):
+            signal[i] = 0
+            state = 0
+            continue
+
+        if state == 0:
+            if rsi[i] < oversold:
+                state = 1
+            elif allow_short and rsi[i] > overbought:
+                state = -1
+
+        elif state == 1:
+            if rsi[i] > 50:
+                state = 0
+
+        elif state == -1:
+            if rsi[i] < 50:
+                state = 0
+
+        signal[i] = state
+
+    df["Signal"] = signal
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Dual Momentum Strategy  (absolute + relative momentum)
+# ---------------------------------------------------------------------------
+
+def dual_momentum_signal(
+    df: pd.DataFrame,
+    lookback: int = 252,
+    safe_haven_col: str = "SHY_Close",
+    benchmark_col: str = "BND_Close",
+) -> pd.DataFrame:
+    """
+    Gary Antonacci's Dual Momentum (single-asset version applied to df["Close"]):
+
+    1. Absolute momentum: if asset 12-month return < risk-free proxy → go to safe haven (0)
+    2. Relative momentum: if asset return > benchmark return → long (1), else flat (0)
+
+    For a single-ticker backtest without SHY/BND data, falls back to:
+      • Long  when 12-month return > 0 (absolute momentum positive)
+      • Flat  otherwise
+
+    Requires Close column. Optionally uses SHY_Close and BND_Close if present.
+    """
+    close = df["Close"]
+    ret_12m = close.pct_change(lookback)
+
+    if benchmark_col in df.columns and safe_haven_col in df.columns:
+        bench_ret = df[benchmark_col].pct_change(lookback)
+        signal = np.where(
+            ret_12m.isna(), 0,
+            np.where(ret_12m < 0, 0,           # absolute momentum filter
+            np.where(ret_12m > bench_ret, 1,    # relative momentum: beat benchmark
+            0))
+        )
+    else:
+        # Fallback: absolute momentum only
+        signal = np.where(ret_12m.isna(), 0, np.where(ret_12m > 0, 1, 0))
+
+    df["Signal"] = signal.astype(int)
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Volatility Targeting Strategy
+# ---------------------------------------------------------------------------
+
+def volatility_targeting_signal(
+    df: pd.DataFrame,
+    target_vol: float = 0.10,
+    vol_window: int = 20,
+    fast: int = 20,
+    slow: int = 100,
+) -> pd.DataFrame:
+    """
+    Scales position size by targeting a fixed annualized volatility.
+    Underlying direction signal: long when fast SMA > slow SMA, flat otherwise.
+    Position size = target_vol / realized_vol, capped at 1 (no leverage).
+
+    Returns fractional Signal values (0.0 to 1.0). backtest.py must support
+    fractional positions, or you can round to {0, 1} — see below.
+
+    Requires SMA_{fast}, SMA_{slow} columns.
+    """
+    fast_col = f"SMA_{fast}"
+    slow_col = f"SMA_{slow}"
+
+    for col in [fast_col, slow_col]:
+        if col not in df.columns:
+            raise ValueError(f"Missing column '{col}'. Run indicators.add_sma() first.")
+
+    daily_returns = df["Close"].pct_change()
+    realized_vol  = daily_returns.rolling(vol_window).std() * np.sqrt(252)
+
+    direction = np.where(df[fast_col] > df[slow_col], 1, 0)
+    scale     = (target_vol / realized_vol).clip(upper=1.0)
+
+    raw_signal = direction * scale
+
+    # Round to binary {0,1} if your backtest engine expects integers
+    df["Signal"] = np.where(raw_signal > 0.5, 1, 0)
+    df["Signal"] = df["Signal"].where(realized_vol.notna(), 0)
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Carry Strategy  (term structure proxy for ETFs)
+# ---------------------------------------------------------------------------
+
+def carry_signal(
+    df: pd.DataFrame,
+    short_window: int = 5,
+    long_window: int = 60,
+    allow_short: bool = False,
+) -> pd.DataFrame:
+    """
+    Carry proxy for ETFs using implied roll yield:
+      roll_yield = short-term momentum - long-term momentum
+
+    Positive roll yield → long (asset in backwardation / upward carry)
+    Negative roll yield → short or flat
+
+    This is a simplified carry signal suitable for equity/bond ETFs.
+    Requires Close column.
+    """
+    close = df["Close"]
+    short_ret = close.pct_change(short_window)
+    long_ret  = close.pct_change(long_window)
+    roll_yield = short_ret - long_ret
+
+    df["Signal"] = np.where(
+        roll_yield.isna(), 0,
+        np.where(roll_yield > 0, 1,
+        np.where(roll_yield < 0 & allow_short, -1, 0))
+    )
+    return df
+
+
+# ---------------------------------------------------------------------------
+# Pairs / Spread Strategy
+# ---------------------------------------------------------------------------
+
+def pairs_signal(
+    df: pd.DataFrame,
+    spread_col: str = "Spread",
+    window: int = 20,
+    entry_z: float = 2.0,
+    exit_z: float = 0.0,
+    allow_short: bool = True,
+) -> pd.DataFrame:
+    """
+    Statistical arbitrage on a pre-computed spread (e.g. log(A) - hedge_ratio*log(B)).
+
+    State machine on z-score of spread:
+      • z < -entry_z  → Long  spread (long A, short B)
+      • z >  entry_z  → Short spread (short A, long B), if allow_short
+      • |z| < exit_z  → Exit to flat
+
+    Requires a 'Spread' column (or pass spread_col name).
+    Compute spread upstream: df["Spread"] = np.log(df["A"]) - hr * np.log(df["B"])
+    """
+    if spread_col not in df.columns:
+        raise ValueError(
+            f"Missing '{spread_col}' column. "
+            "Compute spread = log(A) - hedge_ratio * log(B) before calling this."
+        )
+
+    spread = df[spread_col]
+    roll_mean = spread.rolling(window).mean()
+    roll_std  = spread.rolling(window).std()
+    z_score   = (spread - roll_mean) / roll_std
+
+    z = z_score.values
+    n = len(df)
+    signal = np.zeros(n, dtype=int)
+    state  = 0
+
+    for i in range(n):
+        if np.isnan(z[i]):
+            signal[i] = 0
+            state = 0
+            continue
+
+        if state == 0:
+            if z[i] < -entry_z:
+                state = 1
+            elif allow_short and z[i] > entry_z:
+                state = -1
+
+        elif state == 1:
+            if z[i] >= exit_z:
+                state = 0
+
+        elif state == -1:
+            if z[i] <= -exit_z:
+                state = 0
+
+        signal[i] = state
+
+    df["Signal"] = signal
+    return df
