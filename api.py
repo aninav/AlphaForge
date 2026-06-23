@@ -18,7 +18,11 @@ from typing import Optional
 # ── existing modules ──────────────────────────────────────────────────────────
 from data import fetch_data, fetch_basket, align_basket
 from indicators import add_all, add_sma, add_bollinger_bands
-from strategies import momentum_signal, mean_reversion_signal, regime_aware_signal, rotation_signal
+from strategies import (
+    momentum_signal, mean_reversion_signal, regime_aware_signal, rotation_signal,
+    trend_following_signal, breakout_signal, rsi_mean_reversion_signal,
+    dual_momentum_signal, volatility_targeting_signal, carry_signal,
+)
 from regime import classify_regime, regime_summary
 from events import flag_events, compute_event_impact, event_return_distribution, PLACEHOLDER_EVENTS
 from backtest import run_backtest, build_trade_log
@@ -98,8 +102,30 @@ def build_enriched_df(
         df = momentum_signal(df, fast, slow)
     elif strategy == "mean_reversion":
         df = mean_reversion_signal(df, 20, bb_k, allow_short=allow_short)
-    else:
+    elif strategy == "trend_following":
+        df = add_sma(df, fast)
+        df = add_sma(df, slow)
+        df = trend_following_signal(df, fast, slow, allow_short=allow_short)
+    elif strategy == "breakout":
+        df = breakout_signal(df, window=fast, allow_short=allow_short)
+    elif strategy == "rsi_mean_reversion":
+        from indicators import add_rsi
+        df = add_rsi(df, 14)
+        df["RSI"] = df["RSI_14"]
+        df = rsi_mean_reversion_signal(df, oversold=30, overbought=70, allow_short=allow_short)
+    elif strategy == "dual_momentum":
+        df = dual_momentum_signal(df, lookback=252)
+    elif strategy == "volatility_targeting":
+        df = add_sma(df, fast)
+        df = add_sma(df, slow)
+        df = volatility_targeting_signal(df, target_vol=0.10, vol_window=20, fast=fast, slow=slow)
+    elif strategy == "carry":
+        df = carry_signal(df, short_window=5, long_window=60, allow_short=allow_short)
+    elif strategy == "regime_aware":
         df = regime_aware_signal(df, fast, slow, 20, bb_k, allow_short=allow_short)
+    else:
+        # fallback
+        df = momentum_signal(df, fast, slow)
 
     return df
 
