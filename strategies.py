@@ -421,7 +421,7 @@ def carry_signal(
     df["Signal"] = np.where(
         roll_yield.isna(), 0,
         np.where(roll_yield > 0, 1,
-        np.where(roll_yield < 0 & allow_short, -1, 0))
+        np.where((roll_yield < 0) & allow_short, -1, 0))
     )
     return df
 
