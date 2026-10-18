@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#07111d"/>
+  <g fill="#78d4ff">
+    <!-- both towers as a single shape: slim, even width, sharp seamless apex, flat feet -->
+    <path d="M32 10 L12 52 L18.5 52 L32 23.6 L45.5 52 L52 52 Z" />
+    <!-- bridge: slim, both ends parallel to their towers; joins the right, gap from the left -->
+    <path d="M29.2 39 L40.1 39 L42.5 44 L26.8 44 Z" />
+  </g>
+</svg>

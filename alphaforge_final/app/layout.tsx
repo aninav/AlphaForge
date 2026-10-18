@@ -39,6 +39,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  // Tab icon is provided by the app/icon.svg file convention (auto-detected by Next).
   openGraph: {
     title: "AlphaForge | Systematic Strategy Research Terminal",
     description:
@@ -53,7 +54,6 @@ export const metadata: Metadata = {
     description:
       "A quant research terminal for market regime analysis, strategy testing, and decision-grade workflow clarity.",
   },
-  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({
