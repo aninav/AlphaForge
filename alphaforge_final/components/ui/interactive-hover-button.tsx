@@ -7,12 +7,16 @@ import { cn } from "@/lib/utils";
 interface InteractiveHoverButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   text?: string;
+  /** "outline" (default) = transparent with border; "solid" = filled accent, high emphasis. */
+  variant?: "outline" | "solid";
 }
 
 const InteractiveHoverButton = React.forwardRef<
   HTMLButtonElement,
   InteractiveHoverButtonProps
->(({ text = "Enter Terminal", className, ...props }, ref) => {
+>(({ text = "Enter Terminal", variant = "outline", className, ...props }, ref) => {
+  const isSolid = variant === "solid";
+
   return (
     <button
       ref={ref}
@@ -20,11 +24,12 @@ const InteractiveHoverButton = React.forwardRef<
         // base
         "group relative overflow-hidden cursor-pointer",
         "w-52 h-12 rounded-none",
-        "border border-forge-dim",
-        "bg-transparent",
         "font-mono text-[10px] tracking-[0.22em] uppercase",
-        "text-forge-text",
         "transition-colors duration-300",
+        // variant base
+        isSolid
+          ? "border border-forge-accent bg-forge-accent text-forge-bg"
+          : "border border-forge-dim bg-transparent text-forge-text",
         className
       )}
       {...props}
@@ -34,7 +39,7 @@ const InteractiveHoverButton = React.forwardRef<
         aria-hidden
         className={cn(
           "absolute inset-0 z-0",
-          "bg-forge-bright",
+          isSolid ? "bg-forge-bright" : "bg-forge-bright",
           "translate-x-[-101%] group-hover:translate-x-0",
           "transition-transform duration-[380ms] ease-[cubic-bezier(0.76,0,0.24,1)]"
         )}
@@ -43,12 +48,13 @@ const InteractiveHoverButton = React.forwardRef<
       {/* default label — slides out on hover */}
       <span
         className={cn(
-          "relative z-10 inline-block",
+          "relative z-10 inline-flex items-center justify-center gap-2 w-full h-full",
           "transition-all duration-300",
           "group-hover:translate-x-12 group-hover:opacity-0"
         )}
       >
         {text}
+        {isSolid && <ArrowRight size={14} strokeWidth={1.75} />}
       </span>
 
       {/* hover label + arrow — slides in */}
@@ -59,11 +65,11 @@ const InteractiveHoverButton = React.forwardRef<
           "translate-x-12 opacity-0",
           "group-hover:translate-x-0 group-hover:opacity-100",
           "transition-all duration-300",
-          "text-forge-bg font-mono text-[10px] tracking-[0.22em] uppercase"
+          "text-forge-bg font-mono tracking-[0.22em] uppercase"
         )}
       >
         <span>{text}</span>
-        <ArrowRight size={13} strokeWidth={1.5} />
+        <ArrowRight size={14} strokeWidth={1.75} />
       </div>
     </button>
   );

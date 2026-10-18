@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, BookOpen, ChartNoAxesCombined, Newspaper, ScanSearch, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { ProfileMenu } from "@/components/profile-menu";
 import { BackgroundPaths } from "@/components/ui/background-paths";
 import { GradientText } from "@/components/ui/gradient-text";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
@@ -72,13 +73,7 @@ function Reveal({
   );
 }
 
-function TopBar({
-  signedInEmail,
-  onSignOut,
-}: {
-  signedInEmail?: string;
-  onSignOut: () => void;
-}) {
+function TopBar({ isSignedIn }: { isSignedIn: boolean }) {
   return (
     <motion.div
       className="sticky top-0 z-40 border-b border-forge-border/70 bg-forge-bg/80 backdrop-blur-xl"
@@ -99,26 +94,33 @@ function TopBar({
         </div>
 
         <div className="flex items-center gap-3">
-          <Theme variant="dropdown" size="sm" showLabel />
-          {signedInEmail ? (
+          <Theme variant="dropdown" size="sm" />
+          {isSignedIn ? (
             <>
-              <span className="hidden max-w-[220px] truncate font-mono text-[10px] tracking-[0.16em] text-forge-body md:block">
-                {signedInEmail}
-              </span>
-              <button
-                onClick={onSignOut}
-                className="border border-forge-dim px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright"
+              <Link
+                href="/terminal"
+                className="inline-flex items-center gap-2 border border-forge-accent bg-forge-accent px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-bg transition-opacity hover:opacity-90"
               >
-                Log out
-              </button>
+                Enter Terminal
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <ProfileMenu context="landing" />
             </>
           ) : (
-            <Link
-              href="/blog"
-              className="hidden border border-forge-dim px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright md:block"
-            >
-              Read blog
-            </Link>
+            <>
+              <Link
+                href="/auth"
+                className="border border-forge-dim px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-body transition-colors hover:border-forge-accent hover:text-forge-bright"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/auth"
+                className="border border-forge-accent bg-forge-accent px-3.5 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-forge-bg transition-opacity hover:opacity-90"
+              >
+                Sign up free
+              </Link>
+            </>
           )}
         </div>
       </div>
@@ -147,14 +149,14 @@ function StatRail() {
 
 export function LandingPage() {
   const router = useRouter();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-forge-bg text-forge-text">
       <BackgroundPaths />
 
       <div className="absolute inset-x-0 top-24 h-[520px] bg-[radial-gradient(circle_at_top,rgba(120,212,255,0.18),transparent_54%)]" />
-      <TopBar signedInEmail={user?.email} onSignOut={signOut} />
+      <TopBar isSignedIn={!!user} />
 
       <main className="relative z-10">
         <section className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl items-center gap-14 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
@@ -182,7 +184,9 @@ export function LandingPage() {
                 <div className="h-12 w-52 animate-pulse border border-forge-dim bg-forge-surface/60" />
               ) : (
                 <InteractiveHoverButton
-                  text={user ? "Enter Terminal" : "Get Started"}
+                  text={user ? "Enter Terminal" : "Sign up free"}
+                  variant="solid"
+                  className="w-64 h-14 text-[12px]"
                   onClick={() => router.push(user ? "/terminal" : "/auth")}
                 />
               )}
@@ -351,7 +355,9 @@ export function LandingPage() {
                 <div className="flex flex-col gap-4 sm:flex-row lg:flex-col">
                   {!loading && (
                     <InteractiveHoverButton
-                      text={user ? "Enter Terminal" : "Create Account"}
+                      text={user ? "Enter Terminal" : "Sign up free"}
+                      variant="solid"
+                      className="w-64 h-14 text-[12px]"
                       onClick={() => router.push(user ? "/terminal" : "/auth")}
                     />
                   )}

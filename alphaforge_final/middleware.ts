@@ -30,8 +30,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Protect /terminal — redirect to /auth if not logged in
-  if (pathname.startsWith("/terminal") && !user) {
+  // Protect /terminal and /profile — redirect to /auth if not logged in
+  if ((pathname.startsWith("/terminal") || pathname.startsWith("/profile")) && !user) {
     return NextResponse.redirect(new URL("/auth", request.url))
   }
 
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/terminal/:path*", "/auth"],
+  matcher: ["/terminal/:path*", "/profile/:path*", "/auth"],
 }

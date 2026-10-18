@@ -1,10 +1,10 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { useRouter } from "next/navigation"
 import { useBacktest } from "@/hooks/use-backtest"
 import { Theme }        from "@/components/ui/theme"
 import { useAuth }      from "@/components/auth-provider"
+import { ProfileMenu }  from "@/components/profile-menu"
 import { getTodayIsoDate } from "@/lib/date"
 import { C }            from "./design-system"
 import { Sidebar }      from "./sidebar"
@@ -36,8 +36,7 @@ const TABS = ["Home", "Strategy", "Events", "Portfolio", "Trades", "Library"] as
 type Tab = typeof TABS[number]
 
 export function Terminal() {
-  const router = useRouter()
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const [params,    setParams]    = useState<TerminalParams>(DEFAULT_PARAMS)
   const [pending,   setPending]   = useState<TerminalParams>(DEFAULT_PARAMS)
   const [activeTab, setActiveTab] = useState<Tab>("Home")
@@ -118,27 +117,7 @@ export function Terminal() {
             {params.mode === "walkforward" ? "Walk-Fwd" : params.mode}
           </span>
 
-          {user && (
-            <button
-              onClick={signOut}
-              className="border px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.15em] transition-colors"
-              style={{ color: C.body, borderColor: C.dim, background: "transparent" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = C.text }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = C.body }}
-            >
-              Log out
-            </button>
-          )}
-
-          <button
-            onClick={() => router.push("/")}
-            className="border px-2.5 py-1 font-mono text-[8px] uppercase tracking-[0.15em] transition-colors"
-            style={{ color: C.body, borderColor: C.dim, background: "transparent" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = C.text }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = C.body }}
-          >
-            ← Landing
-          </button>
+          {user && <ProfileMenu context="terminal" />}
         </div>
       </header>
 
