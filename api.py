@@ -16,7 +16,7 @@ import traceback
 from typing import Optional
 
 # ── existing modules ──────────────────────────────────────────────────────────
-from data import fetch_data, fetch_basket, align_basket
+from data import fetch_data, fetch_basket, align_basket, DataUnavailableError
 from indicators import add_all, add_sma, add_bollinger_bands
 from strategies import (
     momentum_signal, mean_reversion_signal, regime_aware_signal, rotation_signal,
@@ -200,6 +200,8 @@ def backtest(
         }
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -246,6 +248,8 @@ def heatmap(
         return {"heatmap": results}
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -311,6 +315,8 @@ def walkforward(
         }
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -353,6 +359,8 @@ def events(
         }
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -410,6 +418,8 @@ def rotation(
         }
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -454,5 +464,7 @@ def signal(
         }
     except HTTPException:
         raise
+    except DataUnavailableError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
