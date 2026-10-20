@@ -21,6 +21,188 @@ export interface BlogPost {
 }
 
 const posts: BlogPost[] = [
+  // ─── NEW POSTS ───────────────────────────────────────────────────────────────
+  {
+    slug: "walk-forward-optimization",
+    title: "Walk-Forward Optimization: Backtesting a Strategy the Honest Way",
+    description:
+      "A single backtest over all of history quietly cheats — it tunes your parameters on the same data it grades them on. Walk-forward analysis fixes that by only ever trading on data the optimizer has never seen.",
+    category: "Backtesting",
+    publishedAt: "2026-09-15",
+    readingTime: "9 min read",
+    heroStat: "In-sample Sharpe overstates out-of-sample Sharpe by 2–3x on average",
+    keywords: [
+      "walk-forward optimization",
+      "out-of-sample testing",
+      "backtest validation",
+      "parameter stability",
+      "overfitting",
+    ],
+    sections: [
+      {
+        heading: "The problem with one big backtest",
+        body: [
+          "When you grid-search fast and slow moving averages over twenty years of data and keep the pair with the best Sharpe, you haven't discovered an edge — you've found the combination that best fit the noise in that specific history. The number you report is an in-sample result, and in-sample results are almost always flattering.",
+          "The honest question isn't 'what parameters worked best on the past?' It's 'if I had chosen parameters using only the data available at the time, how would they have performed next?' Walk-forward analysis is the machinery for answering that question directly.",
+        ],
+      },
+      {
+        heading: "How a walk-forward works",
+        body: [
+          "Split history into rolling windows. On each training window, optimize your parameters — for a momentum system, that might be the fast/slow SMA pair that maximizes Sharpe. Then apply those exact parameters, frozen, to the next test window the optimizer never touched. Slide forward and repeat.",
+          "Chaining every out-of-sample test window together gives you a single continuous equity curve built entirely from decisions made with no knowledge of the future. That curve is a far better estimate of live performance than any in-sample backtest, because it reproduces the one thing you actually have to do in production: pick parameters before you know what happens next.",
+        ],
+      },
+      {
+        heading: "Reading the fold log",
+        body: [
+          "The per-fold record is as informative as the equity curve. If the optimizer picks wildly different parameters every window — fast=10 here, fast=30 there — the strategy has no stable edge; it's chasing whatever worked most recently. Stable parameter selection across folds is a sign the edge is real.",
+          "Watch the gap between training Sharpe and out-of-sample Sharpe too. A small, consistent gap is healthy. A large gap — great in training, mediocre or negative out-of-sample — is the signature of overfitting, and no amount of further tuning will close it.",
+        ],
+      },
+      {
+        heading: "Choosing window sizes",
+        body: [
+          "Training windows that are too short overfit to a single regime; too long and the parameters can't adapt as markets change. A common starting point is a training window of roughly a year of trading days with a test window of about a quarter, then stress-testing how sensitive your results are to those choices.",
+          "If the out-of-sample curve falls apart when you nudge the window sizes, that fragility is itself a finding — robust edges survive reasonable changes to the testing protocol. Flattening positions at each fold boundary also keeps one window's leftover trade from contaminating the next.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "transaction-costs-hidden-tax",
+    title: "Transaction Costs: The Hidden Tax That Decides Your Edge",
+    description:
+      "Most backtests die not from a bad signal but from ignoring what it costs to act on one. Commissions and slippage compound with turnover, and high-frequency strategies feel it most.",
+    category: "Execution",
+    publishedAt: "2026-09-28",
+    readingTime: "7 min read",
+    heroStat: "A 10bps round-trip cost can flip a profitable high-turnover strategy negative",
+    keywords: [
+      "transaction costs",
+      "slippage",
+      "commission",
+      "turnover",
+      "backtest realism",
+    ],
+    sections: [
+      {
+        heading: "Why gross returns lie",
+        body: [
+          "A strategy that looks brilliant on gross returns can be a loser once you subtract the cost of every trade. Each entry and each exit pays commission and slippage, and those small percentages are charged on turnover — so the more a strategy trades, the harder costs bite.",
+          "The failure mode is predictable: a signal that flips frequently racks up hundreds of round trips a year. Even a few basis points per leg, multiplied across that activity, can quietly consume the entire edge. The gross curve climbs; the net curve goes sideways or down.",
+        ],
+      },
+      {
+        heading: "Modeling cost honestly",
+        body: [
+          "A defensible model charges cost on every change in position, once per leg: entering costs you, and exiting costs you again. A round trip therefore pays twice, which is exactly what happens in the real world. Don't fold both legs into a single charge — you'll understate the drag on strategies that flip often.",
+          "Split the figure into commission and slippage because they behave differently. Commission is roughly fixed per trade; slippage widens in volatile or illiquid conditions, which is precisely when an active strategy trades most. A single blended number hides that the worst slippage arrives at the worst time.",
+        ],
+      },
+      {
+        heading: "Turnover is the lever",
+        body: [
+          "Average daily turnover tells you how cost-sensitive a strategy is before you run a single cost scenario. Two systems with identical gross Sharpe can have completely different net profiles if one holds for weeks and the other churns daily.",
+          "The practical move is to test your strategy across a sweep of cost assumptions, from optimistic to pessimistic. If the edge only survives at zero or near-zero costs, it isn't an edge — it's an artifact. Robust strategies keep most of their Sharpe even when you assume you'll trade worse than you hope to.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "reading-risk-adjusted-returns",
+    title: "Beyond Sharpe: Reading Sortino, Calmar, and Drawdown Together",
+    description:
+      "The Sharpe ratio is a useful summary and a poor verdict. To judge a strategy you have to read a panel of metrics that each capture a different kind of risk.",
+    category: "Metrics",
+    publishedAt: "2026-10-05",
+    readingTime: "8 min read",
+    heroStat: "Two strategies with equal Sharpe can have 3x different max drawdowns",
+    keywords: [
+      "sharpe ratio",
+      "sortino ratio",
+      "calmar ratio",
+      "maximum drawdown",
+      "risk-adjusted returns",
+    ],
+    sections: [
+      {
+        heading: "What Sharpe does and doesn't tell you",
+        body: [
+          "Sharpe measures return per unit of total volatility. Its blind spot is that it punishes upside and downside equally — a strategy with sharp profitable spikes is penalized for the same 'volatility' that made you money. It also says nothing about the shape or depth of your losses.",
+          "That's why two strategies can post the same Sharpe and feel nothing alike to live through. One might grind out steady small gains with a shallow worst-case loss; the other might ride a brutal fifty-percent drawdown to the same average. The ratio can't distinguish them, but your account and your nerves can.",
+        ],
+      },
+      {
+        heading: "Sortino: penalizing only the pain",
+        body: [
+          "Sortino fixes Sharpe's symmetry problem by dividing excess return by downside deviation alone — volatility that comes from losses, not gains. A strategy whose swings are mostly upward will show a Sortino meaningfully higher than its Sharpe.",
+          "Comparing the two is itself informative. When Sortino sits far above Sharpe, the strategy's volatility is skewed toward the upside, which is the kind of volatility you want. When they're close, the risk is roughly symmetric.",
+        ],
+      },
+      {
+        heading: "Calmar and drawdown: surviving the worst day",
+        body: [
+          "Calmar divides your annualized return by the magnitude of your maximum drawdown — return earned per unit of worst-case pain. It answers the question that actually ends strategies: not 'how volatile is this?' but 'how deep is the hole it can put me in, and is the reward worth it?'",
+          "Maximum drawdown deserves to be read on its own, not just inside a ratio. A 20% max drawdown and a 55% max drawdown are different businesses even at the same CAGR, because recovering from a 55% loss requires a 122% gain. Pair drawdown depth with how long recoveries take before you trust any headline return.",
+        ],
+      },
+      {
+        heading: "Read the panel, not the number",
+        body: [
+          "No single metric is a verdict. Sharpe for overall efficiency, Sortino for the shape of volatility, Calmar and max drawdown for survivability, win rate and average win/loss for the texture of the trades — together they describe a strategy; alone they mislead.",
+          "Be especially skeptical of a gaudy number backed by a handful of trades. A 3.0 Sharpe over twelve trades is noise wearing a suit. Weight every ratio by the sample size behind it, and prefer a modest edge proven over hundreds of trades to a spectacular one proven over a dozen.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "momentum-vs-mean-reversion",
+    title: "Momentum vs. Mean Reversion: Matching the Strategy to the Regime",
+    description:
+      "Momentum and mean reversion are opposite bets on what price does next. Neither works everywhere — the skill is knowing which environment you're in.",
+    category: "Strategy Research",
+    publishedAt: "2026-10-12",
+    readingTime: "8 min read",
+    heroStat: "The same asset can reward opposite strategies in different regimes",
+    keywords: [
+      "momentum",
+      "mean reversion",
+      "market regime",
+      "trend following",
+      "bollinger bands",
+    ],
+    sections: [
+      {
+        heading: "Two opposite bets",
+        body: [
+          "Momentum assumes continuation: what has been rising will keep rising, so you buy strength and ride the trend. Mean reversion assumes the opposite — that price overshoots and snaps back — so you buy weakness and sell strength, fading the extremes.",
+          "Because they're mirror images, the market condition that feeds one starves the other. A strong directional trend rewards momentum and whipsaws a mean-reversion trader who keeps betting on a reversal that doesn't come. A choppy, range-bound market rewards mean reversion and chops up a momentum trader chasing breakouts that fail.",
+        ],
+      },
+      {
+        heading: "When momentum works",
+        body: [
+          "Momentum earns its keep in trending regimes — sustained moves where a rising moving average stays above a slower one for long stretches. A simple fast-over-slow SMA crossover captures this: stay long while the fast average leads, step aside when it doesn't.",
+          "Its weakness is the sideways market, where price crosses back and forth across the averages and every signal is a small loss. Momentum systems typically have lower win rates but larger average wins — a few big trends pay for many small whipsaws, so cutting the whipsaws without clipping the trends is the whole game.",
+        ],
+      },
+      {
+        heading: "When mean reversion works",
+        body: [
+          "Mean reversion thrives in range-bound, lower-volatility conditions. A Bollinger-band system expresses it cleanly: buy when price stretches below the lower band, exit as it reverts toward the middle. Here, high win rates with modest average gains are the norm.",
+          "The danger is a regime change. A mean-reversion trade that buys the dip in a market that has started trending down keeps buying into a falling knife. The edge that made you money in the range becomes the mechanism that bleeds you out in the trend — which is why a volatility or trend filter matters so much.",
+        ],
+      },
+      {
+        heading: "Let the regime decide",
+        body: [
+          "Rather than marry one approach, classify the environment first and deploy the matching tool: momentum in trends, mean reversion in chop, and reduced or no exposure when volatility spikes and both edges deteriorate. The classifier doesn't have to be perfect to add value — it just has to keep you from running the wrong strategy in the wrong market.",
+          "The honest caveat is that regime detection lags; by the time a shift is obvious it's partly priced. Expect to be wrong at the turns, size positions so those mistakes are survivable, and treat the regime switch as a tilt in the odds rather than a guarantee.",
+        ],
+      },
+    ],
+  },
   // ─── EXISTING POST (cleaned up) ──────────────────────────────────────────────
   {
     slug: "systematic-trading-research-workflow",
