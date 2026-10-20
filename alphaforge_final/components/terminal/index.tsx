@@ -40,8 +40,10 @@ export function Terminal() {
   const [params,    setParams]    = useState<TerminalParams>(DEFAULT_PARAMS)
   const [pending,   setPending]   = useState<TerminalParams>(DEFAULT_PARAMS)
   const [activeTab, setActiveTab] = useState<Tab>("Home")
+  const [hasRun,    setHasRun]    = useState(false)
 
-  const { data, loading, error } = useBacktest(params)
+  // Stay idle until the user hits Run — no auto-fetch on first load.
+  const { data, loading, error } = useBacktest(params, hasRun)
 
   const handleChange = useCallback((patch: Partial<TerminalParams>) => {
     setPending(p => ({ ...p, ...patch }))
@@ -49,6 +51,7 @@ export function Terminal() {
 
   const handleRun = useCallback(() => {
     setParams(pending)
+    setHasRun(true)
   }, [pending])
 
   // Build the pendingResult for the Library save button
@@ -135,7 +138,7 @@ export function Terminal() {
           {params.mode === "live" ? (
             <TabLive params={params} />
           ) : activeTab === "Home" ? (
-            <TabHome data={data} loading={loading} error={error}
+            <TabHome data={data} loading={loading} error={error} hasRun={hasRun}
                      ticker={params.ticker} strategy={params.strategy} />
           ) : activeTab === "Strategy" ? (
             <TabStrategy params={params} backtestData={data} />

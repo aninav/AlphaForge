@@ -22,6 +22,7 @@ interface Props {
   data: BacktestResponse | null
   loading: boolean
   error: string | null
+  hasRun: boolean
   ticker: string
   strategy: string
 }
@@ -58,7 +59,25 @@ function LoadingMetrics() {
   )
 }
 
-export function TabHome({ data, loading, error, ticker, strategy }: Props) {
+export function TabHome({ data, loading, error, hasRun, ticker, strategy }: Props) {
+  // First open — nothing has been run yet. Show a friendly prompt, not an error.
+  if (!hasRun && !loading && !data) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-5">
+        <div className="max-w-sm text-center">
+          <p className="mb-3 font-mono text-[13px] uppercase tracking-[0.18em]" style={{ color: C.bright }}>
+            Run your first backtest
+          </p>
+          <p className="font-mono text-[11px] leading-relaxed" style={{ color: C.subtle }}>
+            Pick a ticker, date range, and strategy on the left, then hit
+            {" "}
+            <span style={{ color: C.text }}>Run</span> to see the equity curve, drawdown, and stats.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   if (error) return <ErrorState message={error} />
 
   return (

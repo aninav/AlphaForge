@@ -10,8 +10,14 @@ interface State {
   error:   string | null
 }
 
-export function useBacktest(params: TerminalParams) {
-  const [state, setState] = useState<State>({ data: null, loading: true, error: null })
+/**
+ * Runs a backtest for `params`.
+ * When `enabled` is false the hook stays idle — nothing is fetched until the
+ * user explicitly runs one (keeps the first page load clean and avoids firing
+ * a heavy request before the user has chosen anything).
+ */
+export function useBacktest(params: TerminalParams, enabled: boolean = true) {
+  const [state, setState] = useState<State>({ data: null, loading: false, error: null })
 
   const fetch = useCallback(async () => {
     setState(s => ({ ...s, loading: true, error: null }))
@@ -27,7 +33,9 @@ export function useBacktest(params: TerminalParams) {
     params.commission, params.slippage, params.event_type,
   ])
 
-  useEffect(() => { fetch() }, [fetch])
+  useEffect(() => {
+    if (enabled) fetch()
+  }, [fetch, enabled])
 
   return { ...state, refetch: fetch }
 }
