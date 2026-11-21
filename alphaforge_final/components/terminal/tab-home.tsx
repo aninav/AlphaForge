@@ -86,7 +86,7 @@ export function TabHome({ data, loading, error, hasRun, ticker, strategy }: Prop
         <div>
           <h2 className="font-mono text-[13px] uppercase tracking-[0.08em]" style={{ color: C.bright }}>
             {ticker}
-            <span style={{ color: C.subtle }}> · {strategy.replace("_", " ")}</span>
+            <span style={{ color: C.subtle }}> · {strategy.replace(/_/g, " ")}</span>
           </h2>
           {data && (
             <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: C.subtle }}>

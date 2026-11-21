@@ -29,6 +29,7 @@ const DEFAULT_PARAMS: TerminalParams = {
   commission:  5,
   slippage:    2,
   event_type:  "FOMC",
+  pair_ticker: "SPY",
   mode:        "backtest",
 }
 

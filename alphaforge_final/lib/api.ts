@@ -37,6 +37,7 @@ function baseParams(p: TerminalParams) {
     commission:  p.commission,
     slippage:    p.slippage,
     event_type:  p.event_type,
+    pair_ticker: p.pair_ticker,
   }
 }
 

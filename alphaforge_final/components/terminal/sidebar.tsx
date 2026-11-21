@@ -16,10 +16,10 @@ const STRATEGIES = [
   { value: "trend_following",   label: "Trend Following" },
   { value: "breakout",          label: "Breakout" },
   { value: "rsi_mean_reversion",label: "RSI Mean Reversion" },
-  { value: "dual_momentum",     label: "Dual Momentum" },
-  { value: "volatility_target", label: "Volatility Targeting" },
-  { value: "carry",             label: "Carry" },
-  { value: "pairs",             label: "Pairs / Spread" },
+  { value: "dual_momentum",       label: "Dual Momentum" },
+  { value: "volatility_targeting",label: "Volatility Targeting" },
+  { value: "carry",               label: "Carry" },
+  { value: "pairs",               label: "Pairs / Spread" },
 ]
 
 interface SidebarProps {
@@ -96,6 +96,26 @@ export function Sidebar({ params, onChange, onRun, loading, onTickerSelect }: Si
           onChange={v => onChange({ strategy: v as TerminalParams["strategy"] })}
           options={STRATEGIES}
         />
+
+        {/* Pair ticker — only for the pairs/spread strategy */}
+        {params.strategy === "pairs" && (
+          <div className="mb-4">
+            <Label>Pair ticker (vs)</Label>
+            <input
+              type="text"
+              value={params.pair_ticker}
+              onChange={e => onChange({ pair_ticker: e.target.value.toUpperCase() })}
+              placeholder="SPY"
+              spellCheck={false}
+              autoComplete="off"
+              className="w-full border px-3 py-2 font-mono text-[12px] uppercase tracking-[0.08em] outline-none"
+              style={{ background: C.bg, color: C.text, borderColor: C.dim }}
+            />
+            <p className="mt-1.5 font-mono text-[8px] uppercase tracking-[0.15em]" style={{ color: C.muted }}>
+              Trades the {params.ticker}/{params.pair_ticker || "SPY"} spread
+            </p>
+          </div>
+        )}
 
         <Divider />
 

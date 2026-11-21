@@ -115,11 +115,23 @@ export interface SignalResponse {
 
 // ── Sidebar params ────────────────────────────────────────────────────────────
 
+export type Strategy =
+  | "momentum"
+  | "mean_reversion"
+  | "regime_aware"
+  | "trend_following"
+  | "breakout"
+  | "rsi_mean_reversion"
+  | "dual_momentum"
+  | "volatility_targeting"
+  | "carry"
+  | "pairs"
+
 export interface TerminalParams {
   ticker: string
   start: string
   end: string
-  strategy: "momentum" | "mean_reversion" | "regime_aware"
+  strategy: Strategy
   fast: number
   slow: number
   bb_k: number
@@ -127,5 +139,6 @@ export interface TerminalParams {
   commission: number
   slippage: number
   event_type: string
+  pair_ticker: string
   mode: "backtest" | "walkforward" | "live"
 }
