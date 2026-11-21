@@ -105,27 +105,33 @@ def build_trade_log(df: pd.DataFrame, price_col: str = "Close") -> pd.DataFrame:
     prices   = df[price_col]
     changes  = position.diff().fillna(0)
 
+    def _fmt(d):
+        return pd.Timestamp(d).strftime("%Y-%m-%d")
+
     in_trade   = False
     entry_date = None
     entry_px   = None
+    entry_i    = 0
     side       = None
 
-    for date, chg in changes.items():
+    for i, (date, chg) in enumerate(changes.items()):
         if not in_trade and chg != 0:
             in_trade   = True
             entry_date = date
             entry_px   = prices[date]
+            entry_i    = i
             side       = "Long" if chg > 0 else "Short"
 
         elif in_trade and (chg != 0 or position[date] == 0):
             exit_px   = prices[date]
             ret       = (exit_px - entry_px) / entry_px if side == "Long" \
                         else (entry_px - exit_px) / entry_px
-            bars_held = (pd.Timestamp(date) - pd.Timestamp(entry_date)).days
+            # Number of trading bars held (not calendar days).
+            bars_held = i - entry_i
 
             trades.append({
-                "Entry_Date":  entry_date,
-                "Exit_Date":   date,
+                "Entry_Date":  _fmt(entry_date),
+                "Exit_Date":   _fmt(date),
                 "Entry_Price": round(entry_px, 2),
                 "Exit_Price":  round(exit_px, 2),
                 "Return_pct":  round(ret * 100, 2),
@@ -139,6 +145,7 @@ def build_trade_log(df: pd.DataFrame, price_col: str = "Close") -> pd.DataFrame:
                 in_trade   = True
                 entry_date = date
                 entry_px   = prices[date]
+                entry_i    = i
                 side       = "Long" if position[date] > 0 else "Short"
 
     return pd.DataFrame(trades)

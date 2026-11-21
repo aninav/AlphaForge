@@ -86,9 +86,14 @@ def regime_summary(df: pd.DataFrame) -> dict:
     counts = df["Regime"].value_counts(normalize=True).mul(100).round(1)
     current = df["Regime"].iloc[-1] if not df.empty else "Unknown"
 
+    # Coerce NaN -> None: short date ranges leave the warm-up indicators empty,
+    # and NaN is not valid JSON (the API serializes with allow_nan=False).
+    vol_pct = df["Vol_Pct"].iloc[-1] if "Vol_Pct" in df.columns and not df.empty else None
+    slope   = df["SMA_Slope"].iloc[-1] if "SMA_Slope" in df.columns and not df.empty else None
+
     return {
         "current_regime": current,
         "distribution": counts.to_dict(),
-        "current_vol_pct": round(df["Vol_Pct"].iloc[-1], 1) if "Vol_Pct" in df.columns else None,
-        "current_slope": round(df["SMA_Slope"].iloc[-1] * 100, 3) if "SMA_Slope" in df.columns else None,
+        "current_vol_pct": round(float(vol_pct), 1) if vol_pct is not None and pd.notna(vol_pct) else None,
+        "current_slope": round(float(slope) * 100, 3) if slope is not None and pd.notna(slope) else None,
     }

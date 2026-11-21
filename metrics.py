@@ -87,6 +87,11 @@ def compute_all(df: pd.DataFrame, trade_log: pd.DataFrame | None = None) -> dict
     df         : backtest result DataFrame (must have Equity, Net_Return columns)
     trade_log  : optional trade log from build_trade_log()
     """
+    # Equity's first row is NaN (first Net_Return is NaN from pct_change), so use the
+    # first VALID equity value — otherwise Total Return is always NaN/None.
+    eq = df["Equity"].dropna()
+    total_return = round((eq.iloc[-1] / eq.iloc[0] - 1) * 100, 2) if len(eq) >= 2 else None
+
     metrics = {
         "CAGR":           round(cagr(df["Equity"]) * 100, 2),
         "Sharpe":         round(sharpe_ratio(df["Net_Return"]), 2),
@@ -94,7 +99,7 @@ def compute_all(df: pd.DataFrame, trade_log: pd.DataFrame | None = None) -> dict
         "Max Drawdown":   round(max_drawdown(df["Equity"]) * 100, 2),
         "Calmar":         round(calmar_ratio(df["Equity"]), 2),
         "Turnover (avg)": round(turnover(df) * 100, 2),
-        "Total Return":   round((df["Equity"].iloc[-1] / df["Equity"].iloc[0] - 1) * 100, 2),
+        "Total Return":   total_return,
     }
 
     if trade_log is not None and not trade_log.empty:

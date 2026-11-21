@@ -21,7 +21,7 @@ from indicators import add_all, add_sma, add_bollinger_bands
 from strategies import (
     momentum_signal, mean_reversion_signal, regime_aware_signal, rotation_signal,
     trend_following_signal, breakout_signal, rsi_mean_reversion_signal,
-    dual_momentum_signal, volatility_targeting_signal, carry_signal,
+    dual_momentum_signal, volatility_targeting_signal, carry_signal, pairs_signal,
 )
 from regime import classify_regime, regime_summary
 from events import flag_events, compute_event_impact, event_return_distribution, PLACEHOLDER_EVENTS
@@ -85,6 +85,7 @@ def build_enriched_df(
     bb_k: float,
     allow_short: bool,
     event_type: str,
+    pair_ticker: str = "SPY",
 ) -> pd.DataFrame:
     """Fetch data and apply all indicators + signal. Shared by multiple endpoints."""
     df = fetch_data(ticker, start, end)
@@ -121,6 +122,17 @@ def build_enriched_df(
         df = volatility_targeting_signal(df, target_vol=0.10, vol_window=20, fast=fast, slow=slow)
     elif strategy == "carry":
         df = carry_signal(df, short_window=5, long_window=60, allow_short=allow_short)
+    elif strategy == "pairs":
+        # Statistical arbitrage: trade the log-spread between the ticker and a second leg.
+        if pair_ticker.strip().upper() == ticker.strip().upper():
+            raise HTTPException(status_code=400, detail="Pairs strategy needs a different second ticker.")
+        pair_df = fetch_data(pair_ticker, start, end)
+        if pair_df.empty:
+            raise HTTPException(status_code=404, detail=f"No data for pair ticker {pair_ticker}")
+        pair_close = pair_df["Close"].reindex(df.index).ffill()
+        df["Spread"] = np.log(df["Close"]) - np.log(pair_close)
+        df = pairs_signal(df, spread_col="Spread", window=20, entry_z=2.0,
+                          exit_z=0.0, allow_short=allow_short)
     elif strategy == "regime_aware":
         df = regime_aware_signal(df, fast, slow, 20, bb_k, allow_short=allow_short)
     else:
@@ -156,9 +168,10 @@ def backtest(
     commission:  float = Query(5.0),
     slippage:    float = Query(2.0),
     event_type:  str   = Query("FOMC"),
+    pair_ticker: str   = Query("SPY"),
 ):
     try:
-        df = build_enriched_df(ticker, start, end, strategy, fast, slow, bb_k, allow_short, event_type)
+        df = build_enriched_df(ticker, start, end, strategy, fast, slow, bb_k, allow_short, event_type, pair_ticker)
 
         df = run_backtest(
             df,
@@ -343,6 +356,14 @@ def events(
         impact = compute_event_impact(df, forward_windows=windows)
         ev_ret, non_ev_ret = event_return_distribution(df, window=windows[0])
 
+        # Scrub NaN from the impact table — a range with no events leaves NaN means,
+        # which is not valid JSON (the API serializes with allow_nan=False).
+        impact_records = impact.reset_index().to_dict(orient="records")
+        impact_table = [
+            {k: (safe_float(v) if isinstance(v, float) else v) for k, v in row.items()}
+            for row in impact_records
+        ]
+
         # Price chart with event markers
         price_df = df[["Close", "IsEvent"]].copy()
         if len(price_df) > 600:
@@ -352,7 +373,7 @@ def events(
         return {
             "event_type":        event_type,
             "available_events":  list(PLACEHOLDER_EVENTS.keys()),
-            "impact_table":      impact.reset_index().to_dict(orient="records"),
+            "impact_table":      impact_table,
             "ev_returns":        [safe_float(x) for x in ev_ret.tolist()],
             "non_ev_returns":    [safe_float(x) for x in non_ev_ret.tolist()],
             "price_chart":       df_to_records(price_df),
@@ -439,9 +460,10 @@ def signal(
     bb_k:        float = Query(2.0),
     allow_short: bool  = Query(False),
     event_type:  str   = Query("FOMC"),
+    pair_ticker: str   = Query("SPY"),
 ):
     try:
-        df      = build_enriched_df(ticker, start, end, strategy, fast, slow, bb_k, allow_short, event_type)
+        df      = build_enriched_df(ticker, start, end, strategy, fast, slow, bb_k, allow_short, event_type, pair_ticker)
         reg     = regime_summary(df)
         last    = df.iloc[-1]
 
